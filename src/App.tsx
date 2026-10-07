@@ -29,6 +29,7 @@ import {
 } from './services/hdbApi';
 import { AffordabilityCalculator } from './components/AffordabilityCalculator';
 import { ApiHealthModal } from './components/ApiHealthModal';
+import { SingaporeTownMap } from './components/SingaporeTownMap';
 
 const REGIONS: RegionFilter[] = ['ALL', 'East', 'North-East', 'Central', 'West', 'North'];
 
@@ -37,7 +38,6 @@ export default function App() {
   const [selectedFlatType, setSelectedFlatType] = useState<FlatTypeOption>('4 ROOM');
   const [selectedTown, setSelectedTown] = useState<string>('TAMPINES');
   const [selectedRegion, setSelectedRegion] = useState<RegionFilter>('ALL');
-  const [townQuery, setTownQuery] = useState<string>('');
 
   // Transaction Table Filters & Sorting
   const [streetSearch, setStreetSearch] = useState<string>('');
@@ -109,18 +109,6 @@ export default function App() {
   useEffect(() => {
     loadHealthAndMetadata();
   }, [loadHealthAndMetadata]);
-
-  // Filtered Towns for the 1-Click Town Selector
-  const visibleTowns = useMemo(() => {
-    return HDB_TOWNS.filter((t) => {
-      const matchesRegion = selectedRegion === 'ALL' || t.region === selectedRegion;
-      const matchesQuery =
-        !townQuery.trim() ||
-        t.label.toLowerCase().includes(townQuery.trim().toLowerCase()) ||
-        t.id.toLowerCase().includes(townQuery.trim().toLowerCase());
-      return matchesRegion && matchesQuery;
-    });
-  }, [selectedRegion, townQuery]);
 
   // Valuation Metrics computed from live records
   const metrics = useMemo(() => {
@@ -299,100 +287,15 @@ export default function App() {
           </div>
         </section>
 
-        {/* Section 2: One-Click Town Selector */}
-        <section
-          id="towns"
-          className="bg-white rounded-3xl border border-black/[0.06] p-5 sm:p-7 space-y-5"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <h2 className="text-base sm:text-lg font-semibold text-[#1D1D1F]">
-                Select HDB Town
-              </h2>
-              <p className="text-xs text-[#6E6E73] mt-0.5">
-                One tap updates live resale valuation for {activeFlatLabel.toLowerCase()}s
-              </p>
-            </div>
-
-            {/* Region Segmented Filter + Quick Town Filter */}
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center bg-[#F5F5F7] p-1 rounded-xl overflow-x-auto no-scrollbar max-w-full">
-                {REGIONS.map((region) => (
-                  <button
-                    key={region}
-                    type="button"
-                    onClick={() => setSelectedRegion(region)}
-                    className={`min-h-[36px] px-3 py-1 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
-                      selectedRegion === region
-                        ? 'bg-white text-[#1D1D1F] shadow-xs'
-                        : 'text-[#6E6E73] hover:text-[#1D1D1F]'
-                    }`}
-                  >
-                    {region === 'ALL' ? 'All Regions' : region}
-                  </button>
-                ))}
-              </div>
-
-              <div className="relative flex-1 sm:flex-initial sm:w-48">
-                <Search className="w-3.5 h-3.5 text-[#6E6E73] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                <input
-                  type="text"
-                  value={townQuery}
-                  onChange={(e) => setTownQuery(e.target.value)}
-                  placeholder="Filter town..."
-                  aria-label="Filter HDB town"
-                  className="w-full min-h-[38px] pl-8 pr-3 py-1.5 text-xs bg-[#F5F5F7] rounded-xl text-[#1D1D1F] placeholder-[#6E6E73] focus:outline-none focus:ring-2 focus:ring-[#0071E3]"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* One-Click Town Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-2">
-            <button
-              type="button"
-              onClick={() => setSelectedTown('ALL')}
-              className={`min-h-[44px] px-3 py-2 rounded-xl text-xs font-medium transition-all text-left flex flex-col justify-center ${
-                selectedTown === 'ALL'
-                  ? 'bg-[#1D1D1F] text-white'
-                  : 'bg-[#F5F5F7] text-[#1D1D1F] hover:bg-[#E8E8ED]'
-              }`}
-            >
-              <span className="font-semibold truncate">All Singapore</span>
-              <span
-                className={`text-[10px] truncate ${
-                  selectedTown === 'ALL' ? 'text-white/75' : 'text-[#6E6E73]'
-                }`}
-              >
-                Islandwide
-              </span>
-            </button>
-
-            {visibleTowns.map((town) => {
-              const isSelected = selectedTown === town.id;
-              return (
-                <button
-                  key={town.id}
-                  type="button"
-                  onClick={() => setSelectedTown(town.id)}
-                  className={`min-h-[44px] px-3 py-2 rounded-xl text-xs font-medium transition-all text-left flex flex-col justify-center ${
-                    isSelected
-                      ? 'bg-[#0071E3] text-white'
-                      : 'bg-[#F5F5F7] text-[#1D1D1F] hover:bg-[#E8E8ED]'
-                  }`}
-                >
-                  <span className="font-semibold truncate">{town.label}</span>
-                  <span
-                    className={`text-[10px] truncate ${
-                      isSelected ? 'text-white/80' : 'text-[#6E6E73]'
-                    }`}
-                  >
-                    {town.region} · {town.maturity}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+        {/* Section 2: Interactive Singapore Map with Segregated Towns */}
+        <section id="towns">
+          <SingaporeTownMap
+            selectedTown={selectedTown}
+            onSelectTown={(townId) => setSelectedTown(townId)}
+            selectedRegion={selectedRegion}
+            onSelectRegion={(reg) => setSelectedRegion(reg)}
+            activeFlatLabel={activeFlatLabel}
+          />
         </section>
 
         {/* Section 3: Primary Focal Anchor — Live Valuation Readout Card */}

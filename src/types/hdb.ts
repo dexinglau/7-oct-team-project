@@ -134,12 +134,12 @@ export interface TownInfo {
 }
 
 export const FLAT_TYPES: Array<{ id: FlatTypeOption; label: string; shortLabel: string; typicalSqm: string }> = [
-  { id: '4 ROOM', label: '4-Room Flat', shortLabel: '4-Room', typicalSqm: '90–95 sqm' },
+  { id: 'ALL', label: 'All Flat Types', shortLabel: 'All Types', typicalSqm: '45–145 sqm' },
+  { id: '2 ROOM', label: '2-Room Flexi', shortLabel: '2-Room', typicalSqm: '45–50 sqm' },
   { id: '3 ROOM', label: '3-Room Flat', shortLabel: '3-Room', typicalSqm: '65–70 sqm' },
+  { id: '4 ROOM', label: '4-Room Flat', shortLabel: '4-Room', typicalSqm: '90–95 sqm' },
   { id: '5 ROOM', label: '5-Room Flat', shortLabel: '5-Room', typicalSqm: '110–115 sqm' },
   { id: 'EXECUTIVE', label: 'Executive', shortLabel: 'Executive', typicalSqm: '130–145 sqm' },
-  { id: '2 ROOM', label: '2-Room Flexi', shortLabel: '2-Room', typicalSqm: '45–50 sqm' },
-  { id: 'ALL', label: 'All Flat Types', shortLabel: 'All Types', typicalSqm: '45–145 sqm' },
 ];
 
 export const HDB_TOWNS: TownInfo[] = [
